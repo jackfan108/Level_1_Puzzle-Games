@@ -43,15 +43,19 @@ def update_board (brd,move):
 
 
 def print_board (brd):
+    i=0
     for x in brd:
         for y in x:
             stdout.write(str(y) + ' ')
+        if i == 2:
+            stdout.write('==>')
         print("")
+        i += 1
 
     
 def done (brd):
-    # FIX ME!
-    return True
+    if brd[2][4] == 'X' and brd[2][5] == 'X':
+        return True
 
 
 # initial board:
