@@ -9,7 +9,8 @@ from sys import stdout
 # by Binary Arts Corp
 #
 
-
+horiz = {'A':2,'X':2,'C':2}
+verti = {'B':2,'O':3,'P':3}
 
 # fail somewhat gracefully
 
@@ -20,26 +21,95 @@ def fail (msg):
 GRID_SIZE = 6
 
 
-def validate_move (brd,move):
-    # FIX ME!
-    # check that piece is on the board
-    # check that piece placed so it can move in that direction
-    # check that piece would be in bound
-    # check that path to target position is free
-    return False
+def validate_move (board,move):
+    car = move[0]
+    direc = move[1]
+    steps = move[2]
+    head = board_loc[car]
+    if car in horiz.keys():
+        carlen = horiz[car]
+    else:
+        carlen = verti[car]
+    if (direc == 'w' or direc == 's') and car in horiz.keys():
+        return False
+    elif (direc == 'a' or direc == 'd') and car in verti.keys():
+        return False
+    if direc == 'w' and head[0] != 0 and steps <= head[0]:
+        for i in range(steps):
+            if board[head[0] - (i+1)][head[1]] != '.':
+                return False
+    if direc == 's' and head[0] + (carlen-1) != 5 and steps >= head[0] + (carlen - 1):
+        for i in range(steps):
+            if board[head[0] + (carlen-1) + (i+1)][head[1]] != '.':
+                return False
+    if direc == 'a' and head[1] != 0 and steps <= head[1]:
+        for i in range(steps):
+            if board[head[0]][head[1] - (i+1)] != '.':
+                return False
+    if direc == 'd' and head[1] + (carlen-1) != 5 and steps >= head[1] + (carlen - 1):
+        for i in range(steps):
+            if board[head[0]][head[1] + (carlen-1) - (i+1)] != '.':
+                return False
+    return True
+
+
 
 
 def read_player_input (brd):
     # FIX ME!
     car = raw_input("Please choose a car: ")
     direction = raw_input("Please choose direction(w,a,s,d): ")
-    steps = raw_input("Please input distance to move: ")
+    steps = int(raw_input("Please input distance to move: "))
     return (car,direction,steps)
 
 
-def update_board (brd,move):
-    # FIX ME!
-    return brd
+def update_board (board,move):
+    if validate_move(board,move):
+        oldcar = board_loc[move[0]]
+        if move[1] == 'w':
+            print board_loc
+            print board
+            print move
+            print type(move[2])
+            board_loc[move[0]] = (board_loc[move[0]][0] - (move[2]),board_loc[move[0]][1])
+            board[oldcar[0]][oldcar[1]] = '.'
+            board[oldcar[0]+1][oldcar[1]] = '.'
+            board[board_loc[move[0]][0]][board_loc[move[0]][1]] = move[0]
+            board[board_loc[move[0]][0]+1][board_loc[move[0]][1]] = move[0]
+            if verti[move[0]] == 3:
+                board[oldcar[0]+2][oldcar[1]] = '.'
+                board[board_loc[move[0]][0]+2][board_loc[move[0]][1]] = move[0]
+
+        elif move[1] == 's':
+            board_loc[move[0]] = (board_loc[move[0]][0] + (move[2]),board_loc[move[0]][1])
+            board[oldcar[0]][oldcar[1]] = '.'
+            board[oldcar[0]+1][oldcar[1]] = '.'
+            board[board_loc[move[0]][0]][board_loc[move[0]][1]] = move[0]
+            board[board_loc[move[0]][0]+1][board_loc[move[0]][1]] = move[0]
+            if verti[move[0]] == 3:
+                board[oldcar[0]+2][oldcar[1]] = '.'
+                board[board_loc[move[0]][0]+2][board_loc[move[0]][1]] = move[0]
+        elif move[1] == 'a':
+            board_loc[move[0]] = (board_loc[move[0]][0],board_loc[move[0]][1] - (move[2]))
+            board[oldcar[0]][oldcar[1]] = '.'
+            board[oldcar[0]][oldcar[1]+1] = '.'
+            board[board_loc[move[0]][0]][board_loc[move[0]][1]] = move[0]
+            board[board_loc[move[0]][0]][board_loc[move[0]][1]+1] = move[0]
+            if horiz[move[0]] == 3:
+                board[oldcar[0]][oldcar[1]+2] = '.'
+                board[board_loc[move[0]][0]][board_loc[move[0]][1]+2] = move[0]
+        elif move[1] == 'd':
+            board_loc[move[0]] = (board_loc[move[0]][0],board_loc[move[0]][1] + (move[2]))
+            board[oldcar[0]][oldcar[1]] = '.'
+            board[oldcar[0]][oldcar[1]+1] = '.'
+            board[board_loc[move[0]][0]][board_loc[move[0]][1]] = move[0]
+            board[board_loc[move[0]][0]][board_loc[move[0]][1]+1] = move[0]
+            if horiz[move[0]] == 3:
+                board[oldcar[0]][oldcar[1]+2] = '.'
+                board[board_loc[move[0]][0]][board_loc[move[0]][1]+2] = move[0]
+
+
+    return board
 
 
 def print_board (brd):
@@ -90,6 +160,7 @@ def create_initial_level ():
     board[5][5] = 'P'
     return board
 
+board_loc = {'X':(2,1),'A':(3,1),'B':(4,1),'C':(5,2),'O':(2,3),'P':(3,5)}
 
 def main ():
 
