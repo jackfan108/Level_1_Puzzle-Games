@@ -34,22 +34,24 @@ def validate_move (board,move):
         return False
     elif (direc == 'a' or direc == 'd') and car in verti.keys():
         return False
-    if direc == 'w' and head[0] != 0 and steps <= head[0]:
+    if direc == 'w' and head[0] != 0 and head[0] - steps >= 0:
         for i in range(steps):
             if board[head[0] - (i+1)][head[1]] != '.':
                 return False
-    if direc == 's' and head[0] + (carlen-1) != 5 and steps >= head[0] + (carlen - 1):
+    elif direc == 's' and head[0] + (carlen-1) != 5 and head[0] + (carlen-1) + steps <=5:
         for i in range(steps):
             if board[head[0] + (carlen-1) + (i+1)][head[1]] != '.':
                 return False
-    if direc == 'a' and head[1] != 0 and steps <= head[1]:
+    elif direc == 'a' and head[1] != 0 and head[1] - steps >= 0:
         for i in range(steps):
             if board[head[0]][head[1] - (i+1)] != '.':
                 return False
-    if direc == 'd' and head[1] + (carlen-1) != 5 and steps >= head[1] + (carlen - 1):
+    elif direc == 'd' and head[1] + (carlen-1) != 5 and head[1] + (carlen-1) + steps <= 5:
         for i in range(steps):
-            if board[head[0]][head[1] + (carlen-1) - (i+1)] != '.':
+            if board[head[0]][head[1] + (carlen-1) + (i+1)] != '.':
                 return False
+    else:
+        return False
     return True
 
 
@@ -57,64 +59,84 @@ def validate_move (board,move):
 
 def read_player_input (brd):
     # FIX ME!
-    car = raw_input("Please choose a car: ")
-    direction = raw_input("Please choose direction(w,a,s,d): ")
-    steps = int(raw_input("Please input distance to move: "))
-    return (car,direction,steps)
+    not_pass = False
+    car = ''
+    direc = ''
+    steps = 0
+    while car not in horiz.keys() and car not in verti.keys():
+        car = raw_input("Please choose a car: ")
+    while direc not in ['a','w','s','d']:
+        direc = raw_input("Please choose direction(w,a,s,d): ")
+    while steps <= 0 or steps >=5:
+        try:
+            steps = int(raw_input("Please input distance to move: "))
+        except ValueError:
+            print "You done fucked up bitch!"
+            pass
+    return (car, direc, steps)
 
 
 def update_board (board,move):
     if validate_move(board,move):
+        car = move[0]
+        direc = move[1]
+        steps = move[2]
         oldcar = board_loc[move[0]]
-        if move[1] == 'w':
-            print board_loc
-            print board
-            print move
-            print type(move[2])
-            board_loc[move[0]] = (board_loc[move[0]][0] - (move[2]),board_loc[move[0]][1])
-            board[oldcar[0]][oldcar[1]] = '.'
-            board[oldcar[0]+1][oldcar[1]] = '.'
-            board[board_loc[move[0]][0]][board_loc[move[0]][1]] = move[0]
-            board[board_loc[move[0]][0]+1][board_loc[move[0]][1]] = move[0]
-            if verti[move[0]] == 3:
-                board[oldcar[0]+2][oldcar[1]] = '.'
-                board[board_loc[move[0]][0]+2][board_loc[move[0]][1]] = move[0]
+        oldx = oldcar[0]
+        oldy = oldcar[1]
 
-        elif move[1] == 's':
-            board_loc[move[0]] = (board_loc[move[0]][0] + (move[2]),board_loc[move[0]][1])
-            board[oldcar[0]][oldcar[1]] = '.'
-            board[oldcar[0]+1][oldcar[1]] = '.'
-            board[board_loc[move[0]][0]][board_loc[move[0]][1]] = move[0]
-            board[board_loc[move[0]][0]+1][board_loc[move[0]][1]] = move[0]
-            if verti[move[0]] == 3:
-                board[oldcar[0]+2][oldcar[1]] = '.'
-                board[board_loc[move[0]][0]+2][board_loc[move[0]][1]] = move[0]
-        elif move[1] == 'a':
-            board_loc[move[0]] = (board_loc[move[0]][0],board_loc[move[0]][1] - (move[2]))
-            board[oldcar[0]][oldcar[1]] = '.'
-            board[oldcar[0]][oldcar[1]+1] = '.'
-            board[board_loc[move[0]][0]][board_loc[move[0]][1]] = move[0]
-            board[board_loc[move[0]][0]][board_loc[move[0]][1]+1] = move[0]
-            if horiz[move[0]] == 3:
-                board[oldcar[0]][oldcar[1]+2] = '.'
-                board[board_loc[move[0]][0]][board_loc[move[0]][1]+2] = move[0]
-        elif move[1] == 'd':
-            board_loc[move[0]] = (board_loc[move[0]][0],board_loc[move[0]][1] + (move[2]))
-            board[oldcar[0]][oldcar[1]] = '.'
-            board[oldcar[0]][oldcar[1]+1] = '.'
-            board[board_loc[move[0]][0]][board_loc[move[0]][1]] = move[0]
-            board[board_loc[move[0]][0]][board_loc[move[0]][1]+1] = move[0]
-            if horiz[move[0]] == 3:
-                board[oldcar[0]][oldcar[1]+2] = '.'
-                board[board_loc[move[0]][0]][board_loc[move[0]][1]+2] = move[0]
+        if direc == 'w':
+            board_loc[car] = (board_loc[car][0] - (steps),board_loc[car][1])
+            board[oldx][oldy] = '.'
+            board[oldx+1][oldy] = '.'
+            if verti[car] == 3:
+                board[oldx+2][oldy] = '.'
+            board[board_loc[car][0]][board_loc[car][1]] = car
+            board[board_loc[car][0]+1][board_loc[car][1]] = car
+            if verti[car] == 3:
+                board[board_loc[car][0]+2][board_loc[car][1]] = car
+
+        elif direc == 's':
+            board_loc[car] = (board_loc[car][0] + (steps),board_loc[car][1])
+            board[oldx][oldy] = '.'
+            board[oldx+1][oldy] = '.'
+            if verti[car] == 3:
+                board[oldx+2][oldy] = '.'
+            board[board_loc[car][0]][board_loc[car][1]] = car
+            board[board_loc[car][0]+1][board_loc[car][1]] = car
+            if verti[car] == 3:
+                board[board_loc[car][0]+2][board_loc[car][1]] = car
+        elif direc == 'a':
+            board_loc[car] = (board_loc[car][0],board_loc[car][1] - (steps))
+            board[oldx][oldy] = '.'
+            board[oldx][oldy+1] = '.'
+            if horiz[car] == 3:
+                board[oldx][oldy+2] = '.'
+            board[board_loc[car][0]][board_loc[car][1]] = car
+            board[board_loc[car][0]][board_loc[car][1]+1] = car
+            if horiz[car] == 3:
+                board[board_loc[car][0]][board_loc[car][1]+2] = car
+        elif direc == 'd':
+            board_loc[car] = (board_loc[car][0],board_loc[car][1] + (steps))
+            board[oldx][oldy] = '.'
+            board[oldx][oldy+1] = '.'
+            if horiz[car] == 3:
+                board[oldx][oldy+2] = '.'
+            board[board_loc[car][0]][board_loc[car][1]] = car
+            board[board_loc[car][0]][board_loc[car][1]+1] = car
+            if horiz[car] == 3:
+                board[board_loc[car][0]][board_loc[car][1]+2] = car
+    else:
+        print "You done fuked bitch!"
 
 
     return board
 
 
-def print_board (brd):
+def print_board (board):
     i=0
-    for x in brd:
+    print board
+    for x in board:
         for y in x:
             stdout.write(str(y) + ' ')
         if i == 2:
@@ -123,8 +145,8 @@ def print_board (brd):
         i += 1
 
     
-def done (brd):
-    if brd[2][4] == 'X' and brd[2][5] == 'X':
+def done (board):
+    if board[2][4] == 'X' and board[2][5] == 'X':
         return True
 
 
