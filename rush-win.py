@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from sys import stdout
+from graphics import *
 #
 # Game Programming, Level 1 Project
 #
@@ -8,6 +9,15 @@ from sys import stdout
 # A simple puzzle game, based on the physical game of the same name 
 # by Binary Arts Corp
 #
+# initial brd:
+# brd positions (1-6,1-6), directions 'r' or 'd'
+#
+# X @ (2,3) r
+# A @ (2,4) r
+# B @ (2,5) d
+# C @ (3,6) r
+# O @ (4,3) d
+# P @ (6,4) d
 
 # fail somewhat gracefully
 len2 = {'A','B','C','D','E','F','G','H','I','J','K','X'}
@@ -16,6 +26,8 @@ horiz = {'A','X','C'}
 verti = {'B','O','P'}
 board_loc = {'X':(2,1),'A':(3,1),'B':(4,1),'C':(5,2),'O':(2,3),'P':(3,5)}
 brd = [[None]*6,[None]*6,[None]*6,[None]*6,[None]*6,[None]*6]
+rectlist = [[None]*6,[None]*6,[None]*6,[None]*6,[None]*6,[None]*6]
+carlist = []
 
 def fail (msg):
     raise StandardError(msg)
@@ -59,8 +71,7 @@ def read_player_input (brd):
     car = ''
     direc = ''
     steps = 0
-    while car.upper() not in horiz and car not in verti:
-        
+    while car.upper() not in horiz and car not in verti:        
         car = raw_input("Please choose a car: ").upper()
     while direc not in ['a','w','s','d']:
         direc = raw_input("Please choose direction(w,a,s,d): ")
@@ -142,15 +153,7 @@ def done (brd):
     if brd[2][4] == 'X' and brd[2][5] == 'X':
         return True
 
-# initial brd:
-# brd positions (1-6,1-6), directions 'r' or 'd'
-#
-# X @ (2,3) r
-# A @ (2,4) r
-# B @ (2,5) d
-# C @ (3,6) r
-# O @ (4,3) d
-# P @ (6,4) d
+
 
 def create_initial_level (brd):
     for x in range(6):
@@ -179,14 +182,50 @@ def change_board(info):
         else:
             horiz.add(info[i*4])
 
+def draw_empty_brd(brd,window):
+    for i in range(6):
+        for k in range(6):
+            rectlist[i][k] = Rectangle(Point(10+i*110,10+k*110),Point(110+i*110,110+k*110))
+            rectlist[i][k].setOutline('black')
+            rectlist[i][k].draw(window)
+
+def draw_car_init(brd,window):
+    for i in board_loc:
+        headx = board_loc[i][0]
+        heady = board_loc[i][1]
+        if i in verti and i in len2:
+            tailx = board_loc[i][0]+1
+            taily = board_loc[i][1]
+        elif i in verti and i in len3:
+            tailx = board_loc[i][0]+2
+            taily = board_loc[i][1]
+        elif i in horiz and i in len2:
+            tailx = board_loc[i][0]
+            taily = board_loc[i][1]+1
+        elif i in horiz and i in len3:
+            tailx = board_loc[i][0]
+            taily = board_loc[i][1]+2
+        carp1 = rectlist[heady][headx].getP1()
+        carp2 = rectlist[taily][tailx].getP2()
+        carlist.append(Rectangle(carp1,carp2))
+    for k in carlist:
+        k.setFill('red')
+        k.draw(window)
+
+
 def main ():
     global brd
+    window = GraphWin('Rush Hour', 670, 670)
+    window.setBackground('white')
     brd = create_initial_level(brd)
     print_board(brd)
+    draw_empty_brd(brd,window)
+    draw_car_init(brd,window)
     while not done(brd):
         move = read_player_input(brd)
         brd = update_board(brd,move)
         print_board(brd)
+    window.close()
     print 'You lucky bastard! Try the next level =D\n'
         
 
