@@ -193,6 +193,9 @@ def draw_empty_brd(brd,window):
             rectlist[i][k] = Rectangle(Point(10+k*110,10+i*110),Point(110+k*110,110+i*110))
             rectlist[i][k].setOutline('black')
             rectlist[i][k].draw(window)
+    exit = Rectangle(Point(660,230),Point(670,330))
+    exit.setFill('red')
+    exit.draw(window)
 
 def draw_car_init(brd,window):
     global car_verti, car_horiz, car_x
