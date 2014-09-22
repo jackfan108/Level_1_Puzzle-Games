@@ -21,7 +21,13 @@ from graphics import *
 # O @ (4,3) d
 # P @ (6,4) d
 
-# fail somewhat gracefully
+# How to play this game:
+# Left click on one of the vehicles and then use wasd to control the vehicle.
+# Goal is to move car 'X' to the marked exit
+# "wasd" would move the vehicle one step in the desired direction
+# Special feature: you can select target vehicle just once to move it any distance you want
+# Special feature 2: program shows number of steps you took to finish the game
+
 len2 = {'A','B','C','D','E','F','G','H','I','J','K','X'}
 len3 = {'O','P','Q','R'}
 horiz = {'A','X','C'}
@@ -33,9 +39,8 @@ car_horiz = {}
 car_verti = {}
 car_text = {}
 car_select = 'X'
-
-def fail (msg):
-    raise StandardError(msg)
+ending = None
+count = 0
 
 def validate_move (brd,move):
     car = move[0]
@@ -82,7 +87,7 @@ def read_player_input_text_based (brd):
         try:
             steps = int(raw_input("Please input distance to move: "))
         except ValueError:
-            print "Invalid move!"
+            #print "Invalid move!"
             pass
     return (car, direc, steps)
 
@@ -108,10 +113,10 @@ def read_player_input (window, brd):
     if key_in != None:
         if key_in not in ['a','w','s','d']:
             key_in = window.checkKey()
-    print(car_select,key_in,1)
     return(car_select,key_in,1)
 
 def update_board (brd,move):
+    global count
     if validate_move(brd,move):
         car = move[0]
         direc = move[1]
@@ -119,6 +124,7 @@ def update_board (brd,move):
         oldcar = board_loc[move[0]]
         oldx = oldcar[0]
         oldy = oldcar[1]
+        count += 1
 
         if direc == 'w':
             board_loc[car] = (board_loc[car][0] - (steps),board_loc[car][1])
@@ -171,7 +177,8 @@ def update_board (brd,move):
             car_horiz[car].move(steps*110,0)
             car_text[car].move(steps*110,0)
     else:
-        print "Invalid move"
+        #print "Invalid move"
+        pass
 
     return brd
 
@@ -270,19 +277,30 @@ def draw_car_init(brd,window):
         car_text[k].draw(window)
 
 def main ():
-    global brd
+    global brd, ending
     window = GraphWin('Rush Hour', 670, 670)
     window.setBackground('white')
     brd = create_initial_level(brd)
-    print_board(brd)
+    #print_board(brd)
     draw_empty_brd(brd,window)
     draw_car_init(brd,window)
     while not done(brd):
         move = read_player_input(window,brd)
         brd = update_board(brd,move)
-        print_board(brd)
+        #print_board(brd)
+
+    cover = Rectangle(Point(0,0),Point(670,670))
+    cover.setFill('white')
+    cover.draw(window)
+    end_text = Text(cover.getCenter(),'Congratulations! \n You used ' + str(count) + ' moves \n Press any key to exit.')
+    end_text.setSize(36)
+    end_text.draw(window)
+
+    while ending == None:
+        ending = window.getKey()
     window.close()
-    print 'You did it! Try the next level =D\n'
+    print 'You did it! Now try the next level =DDDDD\n'
+
         
 
 if __name__ == '__main__':
