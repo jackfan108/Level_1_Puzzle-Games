@@ -31,6 +31,8 @@ brd = [[None]*6,[None]*6,[None]*6,[None]*6,[None]*6,[None]*6]
 rectlist = [[None]*6,[None]*6,[None]*6,[None]*6,[None]*6,[None]*6]
 car_horiz = {}
 car_verti = {}
+car_text = {}
+car_select = 'X'
 
 def fail (msg):
     raise StandardError(msg)
@@ -68,9 +70,7 @@ def validate_move (brd,move):
         return False
     return True
 
-def read_player_input (brd):
-    # FIX ME!
-    not_pass = False
+def read_player_input_text_based (brd):
     car = ''
     direc = ''
     steps = 0
@@ -82,9 +82,34 @@ def read_player_input (brd):
         try:
             steps = int(raw_input("Please input distance to move: "))
         except ValueError:
-            print "You done fucked up bitch!"
+            print "Invalid move!"
             pass
     return (car, direc, steps)
+
+def read_player_input (window, brd):
+    global car_select
+    mouse = window.checkMouse()
+    if mouse != None:
+        for i in car_verti:
+            carp1 = car_verti[i].getP1()
+            carp2 = car_verti[i].getP2()
+            if mouse.getX() >= carp1.getX() and mouse.getX() <= carp2.getX():
+                if mouse.getY() >= carp1.getY() and mouse.getY() <= carp2.getY():
+                    car_select = i
+                    break
+        for i in car_horiz:
+            carp1 = car_horiz[i].getP1()
+            carp2 = car_horiz[i].getP2()
+            if mouse.getX() >= carp1.getX() and mouse.getX() <= carp2.getX():
+                if mouse.getY() >= carp1.getY() and mouse.getY() <= carp2.getY():
+                    car_select = i
+                    break
+    key_in = window.checkKey()
+    if key_in != None:
+        if key_in not in ['a','w','s','d']:
+            key_in = window.checkKey()
+    print(car_select,key_in,1)
+    return(car_select,key_in,1)
 
 def update_board (brd,move):
     if validate_move(brd,move):
@@ -106,6 +131,7 @@ def update_board (brd,move):
             if car in len3:
                 brd[board_loc[car][0]+2][board_loc[car][1]] = car
             car_verti[car].move(0,-steps*110)
+            car_text[car].move(0,-steps*110)
  
         elif direc == 's':
             board_loc[car] = (board_loc[car][0] + (steps),board_loc[car][1])
@@ -118,6 +144,7 @@ def update_board (brd,move):
             if car in len3:
                 brd[board_loc[car][0]+2][board_loc[car][1]] = car
             car_verti[car].move(0,steps*110)
+            car_text[car].move(0,steps*110)
 
         elif direc == 'a':
             board_loc[car] = (board_loc[car][0],board_loc[car][1] - (steps))
@@ -130,6 +157,7 @@ def update_board (brd,move):
             if car in len3:
                 brd[board_loc[car][0]][board_loc[car][1]+2] = car
             car_horiz[car].move(-steps*110,0)
+            car_text[car].move(-steps*110,0)
         elif direc == 'd':
             board_loc[car] = (board_loc[car][0],board_loc[car][1] + (steps))
             brd[oldx][oldy] = '.'
@@ -141,8 +169,9 @@ def update_board (brd,move):
             if car in len3:
                 brd[board_loc[car][0]][board_loc[car][1]+2] = car
             car_horiz[car].move(steps*110,0)
+            car_text[car].move(steps*110,0)
     else:
-        print "You done fucked bitch!"
+        print "Invalid move"
 
     return brd
 
@@ -193,24 +222,15 @@ def draw_empty_brd(brd,window):
             rectlist[i][k] = Rectangle(Point(10+k*110,10+i*110),Point(110+k*110,110+i*110))
             rectlist[i][k].setOutline('black')
             rectlist[i][k].draw(window)
-    exit = Rectangle(Point(660,230),Point(670,330))
+    exit = Rectangle(Point(663,230),Point(668,330))
     exit.setFill('red')
     exit.draw(window)
 
 def draw_car_init(brd,window):
-    global car_verti, car_horiz, car_x
+    global car_verti, car_horiz, car_text
     for i in board_loc:
         headx = board_loc[i][0]
         heady = board_loc[i][1]
-        #if i == 'X':
-        #    tailx = board_loc[i][0]
-        #    taily = board_loc[i][1]+1
-        #    carp1 = rectlist[headx][heady].getP1()
-        #    carp2 = rectlist[tailx][taily].getP2()
-        #    car_x = Rectangle(carp1,carp2)
-        #    car_x.setFill('red')
-        #    car_x.draw(window)
-        #    continue
         if i in verti:
             if i in len2:
                 tailx = board_loc[i][0]+1
@@ -220,6 +240,9 @@ def draw_car_init(brd,window):
             carp1 = rectlist[headx][heady].getP1()
             carp2 = rectlist[tailx][taily].getP2()
             car_verti[i] = Rectangle(carp1,carp2)
+            car_text[i] = Text(car_verti[i].getCenter(),i)
+            car_text[i].setSize(24)
+
             #car_verti.append(Rectangle(carp1,carp2))
         elif i in horiz:
             if i in len2:
@@ -231,6 +254,8 @@ def draw_car_init(brd,window):
             carp2 = rectlist[tailx][taily].getP2()
             car_horiz[i] = Rectangle(carp1,carp2)
             #car_horiz.append(Rectangle(carp1,carp2))
+            car_text[i] = Text(car_horiz[i].getCenter(),i)
+            car_text[i].setSize(24)
 
     for k in car_horiz:
         if k == 'X':
@@ -238,16 +263,11 @@ def draw_car_init(brd,window):
         else:    
             car_horiz[k].setFill('blue')
         car_horiz[k].draw(window)
+        car_text[k].draw(window)
     for k in car_verti:
         car_verti[k].setFill('green')
         car_verti[k].draw(window)
-
-#def draw_car_update(car,brd,window,oldx,oldy,(newx,newy),orientation):
-#    if orientation = 'verti':
-#        rectlist[oldx][oldy].setFill('white')
-#        rectlist[oldx][oldy].setFill('white')
-#        if car in len3:
-#            recli
+        car_text[k].draw(window)
 
 def main ():
     global brd
@@ -258,11 +278,11 @@ def main ():
     draw_empty_brd(brd,window)
     draw_car_init(brd,window)
     while not done(brd):
-        move = read_player_input(brd)
+        move = read_player_input(window,brd)
         brd = update_board(brd,move)
         print_board(brd)
     window.close()
-    print 'You lucky bastard! Try the next level =D\n'
+    print 'You did it! Try the next level =D\n'
         
 
 if __name__ == '__main__':
